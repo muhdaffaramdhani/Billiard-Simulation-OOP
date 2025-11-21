@@ -1,0 +1,82 @@
+import pygame
+# --- IMPORT CLASS DARI FILE LAIN ---
+from config import *
+from ball import CueBall, ObjectBall
+from table import Table
+from cue import Cue
+from physics import PhysicsEngine
+
+class GameManager:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Simulasi Billiard - Kelompok 8 (Modular)")
+        self.clock = pygame.time.Clock()
+        self.running = True
+        
+        # Inisialisasi Objek
+        self.table = Table(100, 100, 1000, 600)
+        self.cue_ball = CueBall(300, 400, 15)
+        
+        # Setup Bola
+        self.balls = [
+            self.cue_ball,
+            ObjectBall(800, 400, 15, RED, 1),
+            ObjectBall(835, 380, 15, YELLOW, 2),
+            ObjectBall(835, 420, 15, RED, 3),
+        ]
+        
+        self.cue = Cue(self.cue_ball)
+        self.is_charging = False
+
+    def run(self):
+        while self.running:
+            self._handle_events()
+            self._update_logic()
+            self._draw_graphics()
+            self.clock.tick(FPS)
+        pygame.quit()
+
+    def _handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.cue_ball.velocity.length() == 0:
+                    self.is_charging = True
+            
+            if event.type == pygame.MOUSEBUTTONUP:
+                if self.is_charging:
+                    self.cue.shoot()
+                    self.is_charging = False
+
+    def _update_logic(self):
+        mouse_pos = pygame.mouse.get_pos()
+        self.cue.update(mouse_pos)
+        
+        if self.is_charging:
+            self.cue.power += 1
+            if self.cue.power > 50: self.cue.power = 50
+            
+        for ball in self.balls:
+            ball.update()
+            ball.check_wall_collision(self.table.rect)
+            
+        for i in range(len(self.balls)):
+            for j in range(i + 1, len(self.balls)):
+                PhysicsEngine.resolve_collision(self.balls[i], self.balls[j])
+
+    def _draw_graphics(self):
+        self.screen.fill(BACKGROUND_COLOR)
+        self.table.draw(self.screen)
+        
+        for ball in self.balls:
+            ball.draw(self.screen)
+            
+        self.cue.draw(self.screen)
+        pygame.display.flip()
+
+if __name__ == "__main__":
+    game = GameManager()
+    game.run()
