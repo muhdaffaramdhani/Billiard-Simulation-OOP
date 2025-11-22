@@ -1,8 +1,8 @@
 import pygame
 
-# --- SCREEN SETTINGS ---
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 800
+# --- SCREEN SETTINGS (80% dari Original 1200x800) ---
+SCREEN_WIDTH = 960
+SCREEN_HEIGHT = 640
 FPS = 60
 
 # --- COLORS (RGB) ---

@@ -4,7 +4,8 @@ from config import TABLE_COLOR, BORDER_COLOR
 class Table:
     def __init__(self, x, y, width, height):
         self.rect = pygame.Rect(x, y, width, height)
-        self.cushion_size = 40 
+        # Ukuran cushion disesuaikan (40 * 0.8 = 32)
+        self.cushion_size = 32 
 
     def draw(self, surface):
         # Bingkai Kayu

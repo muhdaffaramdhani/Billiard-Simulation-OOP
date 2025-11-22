@@ -10,20 +10,23 @@ class GameManager:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Simulasi Billiard - Kelompok 8 (Modular)")
+        pygame.display.set_caption("Simulasi Billiard - Kelompok 8")
         self.clock = pygame.time.Clock()
         self.running = True
         
-        # Inisialisasi Objek
-        self.table = Table(100, 100, 1000, 600)
-        self.cue_ball = CueBall(300, 400, 15)
+        # Inisialisasi Objek (Semua dimensi dikali 0.8)
+        # Table: x=80, y=80, w=800, h=480
+        self.table = Table(80, 80, 800, 480)
         
-        # Setup Bola
+        # Bola Putih: x=240, y=320, radius=12 (sebelumnya 15)
+        self.cue_ball = CueBall(240, 320, 12)
+        
+        # Setup Bola (Posisi dan radius dikali 0.8)
         self.balls = [
             self.cue_ball,
-            ObjectBall(800, 400, 15, RED, 1),
-            ObjectBall(835, 380, 15, YELLOW, 2),
-            ObjectBall(835, 420, 15, RED, 3),
+            ObjectBall(640, 320, 12, RED, 1),     # (800*0.8, 400*0.8)
+            ObjectBall(668, 304, 12, YELLOW, 2),  # (835*0.8, 380*0.8)
+            ObjectBall(668, 336, 12, RED, 3),     # (835*0.8, 420*0.8)
         ]
         
         self.cue = Cue(self.cue_ball)
@@ -57,7 +60,8 @@ class GameManager:
         
         if self.is_charging:
             self.cue.power += 1
-            if self.cue.power > 50: self.cue.power = 50
+            # Batas power dikurangi jadi 40 agar sebanding dengan skala visual baru
+            if self.cue.power > 40: self.cue.power = 40
             
         for ball in self.balls:
             ball.update()
