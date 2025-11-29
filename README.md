@@ -60,7 +60,7 @@ Pause	Tombol MENU	Membuka menu pause.
 
 ## 📂 Struktur Proyek
 ```bash
-### 📁 Billiard
+📁 Billiard
 │
 ├── main.py        # Entry point, game loop, UI Manager, aturan 8-ball
 ├── config.py      # Konfigurasi global (warna, layar, konstanta)
