@@ -1,7 +1,7 @@
 # 🎱 Billiard  
 **Simulasi Game Biliar 8-Ball Interaktif – Python & Pygame**
 
-Billiard Master v2.5 adalah permainan biliar 8-ball yang dibangun menggunakan **Python** dan **Pygame**, dengan penerapan **OOP**, sistem fisika realistis, audio sintetis, serta antarmuka modern yang responsif.
+Billiard adalah permainan biliar 8-ball yang dibangun menggunakan **Python** dan **Pygame**, dengan penerapan **OOP**, sistem fisika realistis, audio sintetis, serta antarmuka modern yang responsif.
 
 ---
 
@@ -20,7 +20,7 @@ Billiard Master v2.5 adalah permainan biliar 8-ball yang dibangun menggunakan **
 ---
 
 ### 🖥️ 2. Antarmuka Pengguna (UI)
-- **Resolusi Widescreen 1280x800**.
+- **Resolusi Widescreen 1280x720**
 - **Power Bar** visual untuk kekuatan pukulan.
 - **Remaining Balls Indicator** untuk memantau bola tiap pemain.
 - **Menu Lengkap**: Main Menu, Pause, Settings, Tutorial, Game Over.
