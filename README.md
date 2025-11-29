@@ -59,7 +59,7 @@ Pause	Tombol MENU	Membuka menu pause.
 ---
 
 ## 📂 Struktur Proyek
-
+```bash
 ### 📁 Billiard
 │
 ├── main.py        # Entry point, game loop, UI Manager, aturan 8-ball
@@ -69,6 +69,7 @@ Pause	Tombol MENU	Membuka menu pause.
 ├── table.py       # Rendering meja, dinding, deteksi lubang
 ├── physics.py     # Engine fisika (collision, friction, momentum)
 └── assets/        # (opsional) jika pakai gambar tambahan
+```
 
 ### 👥 Kelompok 8
 Mata Kuliah: Desain Pemrograman Berorientasi Objek
