@@ -40,12 +40,14 @@ Pastikan Python 3.x dan pygame sudah terinstal:
 
 ```bash
 pip install pygame
+```
+
 ▶️ Menjalankan Game
 Jalankan dari terminal di folder proyek:
-
-bash
+```bash
 Salin kode
 python main.py
+```
 
 🕹️ Kontrol Permainan
 Aksi	Input	Deskripsi

@@ -66,7 +66,7 @@ class GameManager:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Billiard Master")
+        pygame.display.set_caption("Billiard - DPBO Kelompok 8")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont('Arial', 18)
         self.title_font = pygame.font.SysFont('Arial', 48, bold=True)
