@@ -8,7 +8,6 @@ from table import Table
 from cue import Cue
 from physics import PhysicsEngine
 
-# --- CLASS SOUND GENERATOR ---
 class SoundGenerator:
     def __init__(self):
         self.enabled = True
@@ -18,8 +17,7 @@ class SoundGenerator:
             self.sounds['hit'] = self._generate_beep(400, 0.1)    
             self.sounds['pocket'] = self._generate_beep(800, 0.2) 
             self.has_mixer = True
-        except Exception as e:
-            print(f"Audio init failed: {e}")
+        except Exception:
             self.has_mixer = False
 
     def _generate_beep(self, frequency, duration):
@@ -37,7 +35,6 @@ class SoundGenerator:
         if self.enabled and self.has_mixer and name in self.sounds:
             self.sounds[name].play()
 
-# --- CLASS BUTTON UI ---
 class Button:
     def __init__(self, x, y, w, h, text, color=ACCENT_COLOR):
         self.rect = pygame.Rect(x, y, w, h)
@@ -65,12 +62,11 @@ class Button:
             return self.is_hovered
         return False
 
-# --- GAME MANAGER ---
 class GameManager:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Billiard Master v2.5 (Widescreen & Pause)")
+        pygame.display.set_caption("Billiard Master")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont('Arial', 18)
         self.title_font = pygame.font.SysFont('Arial', 48, bold=True)
@@ -88,28 +84,21 @@ class GameManager:
 
         self.reset_game()
         
-        # --- UI BUTTONS ---
-        # Main Menu
         cx = SCREEN_WIDTH // 2
         self.btn_start = Button(cx - 100, 300, 200, 50, "PLAY GAME")
         self.btn_tutorial = Button(cx - 100, 370, 200, 50, "TUTORIAL")
         self.btn_settings = Button(cx - 100, 440, 200, 50, "SETTINGS")
         self.btn_quit = Button(cx - 100, 510, 200, 50, "QUIT")
         
-        # Others
         self.btn_back = Button(50, SCREEN_HEIGHT - 60, 100, 40, "BACK", GREY)
         self.btn_toggle_sound = Button(cx - 100, 300, 200, 50, "SOUND: ON")
         
-        # In-Game UI
         self.btn_reset_match = Button(cx - 60, SCREEN_HEIGHT - 60, 120, 40, "RESET", RED)
-        # Tombol Menu di pojok kanan atas (dalam top bar)
         self.btn_pause_game = Button(SCREEN_WIDTH - 120, 20, 100, 40, "MENU", GREY)
         
-        # Pause Menu Buttons
         self.btn_resume = Button(cx - 100, SCREEN_HEIGHT//2 - 30, 200, 50, "RESUME", ACCENT_COLOR)
         self.btn_exit_to_menu = Button(cx - 100, SCREEN_HEIGHT//2 + 40, 200, 50, "MAIN MENU", GREY)
         
-        # Game Over Buttons
         self.btn_play_again = Button(cx - 100, 380, 200, 50, "PLAY AGAIN", ACCENT_COLOR)
         self.btn_main_menu = Button(cx - 100, 450, 200, 50, "MAIN MENU", GREY)
 
@@ -161,7 +150,6 @@ class GameManager:
                     pygame.quit()
                     sys.exit()
                 
-                # --- STATE HANDLING ---
                 if self.state == STATE_MENU:
                     if self.btn_start.is_clicked(event): self.state = STATE_PLAYING
                     if self.btn_tutorial.is_clicked(event): self.state = STATE_TUTORIAL
@@ -179,14 +167,12 @@ class GameManager:
                     if self.btn_back.is_clicked(event): self.state = STATE_MENU
                 
                 elif self.state == STATE_PLAYING:
-                    # Tombol Pause Menu
                     if self.btn_pause_game.is_clicked(event):
                         self.state = STATE_PAUSED
                     
                     if self.btn_reset_match.is_clicked(event):
                         self.reset_game()
 
-                    # Logic Stik hanya jalan jika tidak klik tombol
                     if not self.btn_pause_game.is_hovered and not self.btn_reset_match.is_hovered:
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             if not self.is_moving:
@@ -213,7 +199,6 @@ class GameManager:
                         self.reset_game()
                         self.state = STATE_MENU
 
-            # --- HOVER UPDATE & DRAW ---
             self.screen.fill(UI_BG)
             
             if self.state == STATE_MENU:
@@ -232,8 +217,8 @@ class GameManager:
             elif self.state == STATE_PAUSED:
                 self.btn_resume.check_hover(mouse_pos)
                 self.btn_exit_to_menu.check_hover(mouse_pos)
-                self.draw_game(mouse_pos) # Draw game bg
-                self.draw_paused() # Draw overlay
+                self.draw_game(mouse_pos)
+                self.draw_paused()
                 
             elif self.state == STATE_TUTORIAL:
                 self.btn_back.check_hover(mouse_pos)
@@ -339,7 +324,6 @@ class GameManager:
         self.message_timer = 60
         self.ball_potted_this_turn = False
 
-    # --- DRAW FUNCTIONS ---
     def draw_menu(self):
         title = self.title_font.render("BILLIARD SIMULATION", True, WHITE)
         self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 150))
@@ -410,11 +394,10 @@ class GameManager:
         p2_type = self.player_assignments[2] if self.player_assignments[2] else "OPEN"
         p2_color = ACCENT_COLOR if self.turn == 2 else GREY
         p2_text = self.font.render(f"PLAYER 2 ({p2_type.upper()})", True, p2_color)
-        p2_rect = p2_text.get_rect(topright=(SCREEN_WIDTH - 150, 20)) # Geser sedikit agar muat tombol pause
+        p2_rect = p2_text.get_rect(topright=(SCREEN_WIDTH - 150, 20))
         self.screen.blit(p2_text, p2_rect)
         self.draw_remaining_balls(2, SCREEN_WIDTH - 150, 55, align_left=False)
 
-        # Power Bar
         bar_x, bar_y = SCREEN_WIDTH // 2 - 100, 25
         bar_w, bar_h = 200, 30
         pygame.draw.rect(self.screen, BLACK, (bar_x, bar_y, bar_w, bar_h), border_radius=5)

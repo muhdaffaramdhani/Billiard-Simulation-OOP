@@ -64,28 +64,20 @@ class Ball:
     def draw(self, surface, font=None):
         if self.potted: return
         
-        # 1. Gambar Base Bola
         pygame.draw.circle(surface, self.color, (int(self.pos.x), int(self.pos.y)), self.radius)
         
-        # 2. Pola Stripe (Jika ada)
         if self.type == "stripe":
             pygame.draw.circle(surface, WHITE, (int(self.pos.x), int(self.pos.y)), self.radius - 3)
-            # Gambar ulang bagian tengah berwarna (untuk efek stripe)
-            # Ini simplifikasi visual: stripe horizontal
             rect_h = 10
             pygame.draw.rect(surface, self.color, (self.pos.x - self.radius + 2, self.pos.y - rect_h//2, (self.radius*2) - 4, rect_h))
         
-        # 3. Lingkaran Putih untuk Nomor (Label Area)
         if self.number > 0:
             pygame.draw.circle(surface, WHITE, (int(self.pos.x), int(self.pos.y)), 6)
-            
-            # 4. Gambar Nomor (Teks Hitam)
             if font:
                 text_surf = font.render(str(self.number), True, BLACK)
                 text_rect = text_surf.get_rect(center=(int(self.pos.x), int(self.pos.y)))
                 surface.blit(text_surf, text_rect)
 
-        # 5. Highlight 3D (Pantulan cahaya kecil)
         pygame.draw.circle(surface, (255, 255, 255), (int(self.pos.x - 3), int(self.pos.y - 3)), 2)
 
 class CueBall(Ball):
