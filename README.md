@@ -45,11 +45,9 @@ pip install pygame
 ▶️ Menjalankan Game
 Jalankan dari terminal di folder proyek:
 ```bash
-Salin kode
 python main.py
 ```
-
-🕹️ Kontrol Permainan
+### 🕹️ Kontrol Permainan
 Aksi	Input	Deskripsi
 Membidik	Gerakkan Mouse	Mengarahkan stik.
 Kunci Arah	Klik Kiri (1x)	Mengunci sudut bidikan dan masuk mode Power.
@@ -58,11 +56,11 @@ Menembak	Klik Kiri (2x)	Melepaskan pukulan sesuai power.
 Batal	Klik Kanan	Membatalkan bidikan.
 Pause	Tombol MENU	Membuka menu pause.
 
-📂 Struktur Proyek
-bash
-Salin kode
+---
 
-📁 Billiard-Master
+## 📂 Struktur Proyek
+
+### 📁 Billiard
 │
 ├── main.py        # Entry point, game loop, UI Manager, aturan 8-ball
 ├── config.py      # Konfigurasi global (warna, layar, konstanta)
@@ -72,8 +70,8 @@ Salin kode
 ├── physics.py     # Engine fisika (collision, friction, momentum)
 └── assets/        # (opsional) jika pakai gambar tambahan
 
-👥 Kelompok 8
+### 👥 Kelompok 8
 Mata Kuliah: Desain Pemrograman Berorientasi Objek
 
-📜 Lisensi
+### 📜 Lisensi
 Proyek ini dapat digunakan untuk keperluan akademik, pembelajaran, atau pengembangan pribadi.
