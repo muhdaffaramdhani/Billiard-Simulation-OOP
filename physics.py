@@ -2,55 +2,88 @@ import math
 import pygame
 
 class PhysicsEngine:
-    """
-    Kelas statis untuk menangani perhitungan fisika yang kompleks
-    seperti tumbukan antar bola.
-    """
     @staticmethod
     def resolve_collision(ball1, ball2):
-        # Hitung jarak vektor antara dua bola
+        if ball1.potted or ball2.potted:
+            return False
+
         dx = ball1.pos.x - ball2.pos.x
         dy = ball1.pos.y - ball2.pos.y
         distance = math.hypot(dx, dy)
 
-        # Jika jarak lebih kecil dari total jari-jari, berarti tabrakan
+        # Cek Tabrakan
         if distance < ball1.radius + ball2.radius:
-            # 1. Hitung Vektor Normal (arah tumbukan) dan Unit Vektornya
-            # Mencegah pembagian dengan nol
             if distance == 0: distance = 0.001 
             
             nx = dx / distance
             ny = dy / distance
+            tx, ty = -ny, nx
 
-            # 2. Hitung Vektor Tangent (tegak lurus terhadap normal)
-            tx = -ny
-            ty = nx
-
-            # 3. Proyeksikan kecepatan bola ke vektor Normal dan Tangent (Dot Product)
-            # v_n = kecepatan arah tumbukan
-            # v_t = kecepatan arah samping
             v1n = ball1.velocity.x * nx + ball1.velocity.y * ny
             v1t = ball1.velocity.x * tx + ball1.velocity.y * ty
-            
             v2n = ball2.velocity.x * nx + ball2.velocity.y * ny
             v2t = ball2.velocity.x * tx + ball2.velocity.y * ty
 
-            # 4. Pertukaran Momentum 1 Dimensi (Pada arah Normal saja)
-            # Karena massa bola sama, kecepatan normal cukup ditukar
+            # Pertukaran Momentum
             v1n_final = v2n
             v2n_final = v1n
 
-            # 5. Konversi kembali ke skalar X dan Y
-            # Kecepatan baru = (Normal Baru * Vektor Normal) + (Tangent Lama * Vektor Tangent)
             ball1.velocity.x = v1n_final * nx + v1t * tx
             ball1.velocity.y = v1n_final * ny + v1t * ty
-            
             ball2.velocity.x = v2n_final * nx + v2t * tx
             ball2.velocity.y = v2n_final * ny + v2t * ty
 
-            # Mendorong bola agar tidak saling menempel (bug lengket)
+            # Koreksi Overlap
             overlap = (ball1.radius + ball2.radius - distance) / 2.0
             ball1.pos.x += nx * overlap
             ball1.pos.y += ny * overlap
             ball2.pos.x -= nx * overlap
             ball2.pos.y -= ny * overlap
+            
+            return True # Terjadi tabrakan
+        return False
+
+    @staticmethod
+    def ray_cast_ball(start_pos, direction_vector, balls):
+        """
+        Mencari bola pertama yang dipotong oleh garis (Ray Casting).
+        Digunakan untuk prediksi bidikan stik.
+        """
+        closest_dist = float('inf')
+        closest_ball = None
+        hit_pos = None
+
+        # Normalisasi arah
+        if direction_vector.length() == 0: return None, None
+        dir_norm = direction_vector.normalize()
+
+        for ball in balls:
+            if ball.potted: continue
+            
+            # Vector dari asal ray ke pusat bola
+            to_ball = ball.pos - start_pos
+            
+            # Proyeksi titik pusat bola ke garis ray
+            proj_length = to_ball.dot(dir_norm)
+            
+            # Jika proyeksi negatif, bola ada di belakang
+            if proj_length < 0: continue
+            
+            closest_point_on_ray = start_pos + dir_norm * proj_length
+            dist_to_center = closest_point_on_ray.distance_to(ball.pos)
+            
+            # Cek apakah garis menembus radius bola (dikali 2 untuk safety margin visual)
+            if dist_to_center < ball.radius * 2:
+                # Hitung titik tabrakan tepat di permukaan bola
+                # Mundur dari pusat bola sepanjang sisa radius
+                dist_back = math.sqrt((ball.radius * 2)**2 - dist_to_center**2)
+                impact_point = closest_point_on_ray - dir_norm * dist_back
+                
+                dist_from_start = start_pos.distance_to(impact_point)
+                
+                if dist_from_start < closest_dist:
+                    closest_dist = dist_from_start
+                    closest_ball = ball
+                    hit_pos = impact_point
+
+        return closest_ball, hit_pos
