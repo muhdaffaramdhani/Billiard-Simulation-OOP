@@ -12,6 +12,7 @@ class Ball:
         self.potted = False
         self.number = number
         
+        # Penentuan tipe bola
         if number == 0: self.type = "cue"
         elif number == 8: self.type = "eight"
         elif 1 <= number <= 7: self.type = "solid"
@@ -21,6 +22,8 @@ class Ball:
         if self.potted: return
 
         self.pos += self.velocity
+        
+        # Gesekan (Friction) untuk memperlambat bola secara bertahap
         if self.velocity.length() > 0.05:
             self.velocity *= self.friction
         else:
@@ -30,15 +33,17 @@ class Ball:
         if self.potted: return False
         
         collided = False
+        # Dinding Kiri & Kanan
         if self.pos.x - self.radius < table_rect.left:
             self.pos.x = table_rect.left + self.radius
-            self.velocity.x *= -0.9
+            self.velocity.x *= -0.9 # Kehilangan sedikit energi saat memantul
             collided = True
         elif self.pos.x + self.radius > table_rect.right:
             self.pos.x = table_rect.right - self.radius
             self.velocity.x *= -0.9
             collided = True
 
+        # Dinding Atas & Bawah
         if self.pos.y - self.radius < table_rect.top:
             self.pos.y = table_rect.top + self.radius
             self.velocity.y *= -0.9
@@ -55,6 +60,7 @@ class Ball:
         for pocket in pockets:
             dx = self.pos.x - pocket[0]
             dy = self.pos.y - pocket[1]
+            # Jika jarak ke lubang lebih kecil dari radius lubang -> masuk
             if math.hypot(dx, dy) < POCKET_RADIUS:
                 self.potted = True
                 self.velocity = pygame.math.Vector2(0, 0)
@@ -64,13 +70,17 @@ class Ball:
     def draw(self, surface, font=None):
         if self.potted: return
         
+        # 1. Gambar Dasar Bola
         pygame.draw.circle(surface, self.color, (int(self.pos.x), int(self.pos.y)), self.radius)
         
+        # 2. Gambar Motif Stripe (Garis Putih)
         if self.type == "stripe":
             pygame.draw.circle(surface, WHITE, (int(self.pos.x), int(self.pos.y)), self.radius - 3)
             rect_h = 10
+            # Membuat strip warna di tengah
             pygame.draw.rect(surface, self.color, (self.pos.x - self.radius + 2, self.pos.y - rect_h//2, (self.radius*2) - 4, rect_h))
         
+        # 3. Gambar Nomor Bola
         if self.number > 0:
             pygame.draw.circle(surface, WHITE, (int(self.pos.x), int(self.pos.y)), 6)
             if font:
@@ -78,7 +88,10 @@ class Ball:
                 text_rect = text_surf.get_rect(center=(int(self.pos.x), int(self.pos.y)))
                 surface.blit(text_surf, text_rect)
 
-        pygame.draw.circle(surface, (255, 255, 255), (int(self.pos.x - 3), int(self.pos.y - 3)), 2)
+        # 4. Highlight (Kilap 3D) - PENTING UNTUK VISUAL MINGGU 5
+        # Menggambar lingkaran kecil putih di pojok kiri atas bola
+        highlight_pos = (int(self.pos.x - self.radius * 0.3), int(self.pos.y - self.radius * 0.3))
+        pygame.draw.circle(surface, (255, 255, 255), highlight_pos, 2)
 
 class CueBall(Ball):
     def __init__(self, x, y):

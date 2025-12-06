@@ -8,7 +8,11 @@ from table import Table
 from cue import Cue
 from physics import PhysicsEngine
 
+# Tambahan State untuk Menu Team
+STATE_TEAM = "team"
+
 class SoundGenerator:
+    """Class untuk menghasilkan efek suara sintetis tanpa file eksternal"""
     def __init__(self):
         self.enabled = True
         try:
@@ -46,6 +50,9 @@ class Button:
 
     def draw(self, surface):
         color = self.color if not self.is_hovered else self.hover_color
+        # Shadow effect
+        pygame.draw.rect(surface, (10, 10, 10), (self.rect.x + 2, self.rect.y + 2, self.rect.w, self.rect.h), border_radius=8)
+        # Main button
         pygame.draw.rect(surface, color, self.rect, border_radius=8)
         pygame.draw.rect(surface, WHITE, self.rect, 2, border_radius=8)
         
@@ -69,7 +76,9 @@ class GameManager:
         pygame.display.set_caption("Billiard - DPBO Kelompok 8")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont('Arial', 18)
+        self.debug_font = pygame.font.SysFont('Consolas', 14) # Font khusus debug
         self.title_font = pygame.font.SysFont('Arial', 48, bold=True)
+        self.header_font = pygame.font.SysFont('Arial', 28, bold=True) # Font untuk header panel
         self.ball_font = pygame.font.SysFont('Arial', 10, bold=True)
         self.ui_ball_font = pygame.font.SysFont('Arial', 12, bold=True)
         
@@ -82,23 +91,45 @@ class GameManager:
             8: BLACK
         }
 
+        # --- SENSITIVITY SETTINGS ---
+        self.sens_values = [0.5, 1.0, 1.5]
+        self.sens_names = ["LOW", "NORMAL", "HIGH"]
+        self.current_sens_idx = 0 # Default: Low (0.5)
+
         self.reset_game()
         
+        # Inisialisasi Tombol UI
         cx = SCREEN_WIDTH // 2
-        self.btn_start = Button(cx - 100, 300, 200, 50, "PLAY GAME")
-        self.btn_tutorial = Button(cx - 100, 370, 200, 50, "TUTORIAL")
-        self.btn_settings = Button(cx - 100, 440, 200, 50, "SETTINGS")
-        self.btn_quit = Button(cx - 100, 510, 200, 50, "QUIT")
         
-        self.btn_back = Button(50, SCREEN_HEIGHT - 60, 100, 40, "BACK", GREY)
+        # --- MENU UTAMA ---
+        # Mengatur ulang posisi agar muat tombol Team
+        start_y_menu = 280
+        gap = 60
+        self.btn_start = Button(cx - 100, start_y_menu, 200, 50, "PLAY GAME")
+        self.btn_tutorial = Button(cx - 100, start_y_menu + gap, 200, 50, "TUTORIAL")
+        self.btn_team = Button(cx - 100, start_y_menu + gap * 2, 200, 50, "OUR TEAM") # Tombol Baru
+        self.btn_settings = Button(cx - 100, start_y_menu + gap * 3, 200, 50, "SETTINGS")
+        self.btn_quit = Button(cx - 100, start_y_menu + gap * 4, 200, 50, "QUIT")
+        
+        # --- SUB MENUS (Common Back Button) ---
+        # Kita sesuaikan posisi tombol back agar ada di dalam panel nanti
+        self.btn_back_panel = Button(cx - 100, 550, 200, 40, "BACK", GREY)
+        
+        # --- SETTINGS UI ---
         self.btn_toggle_sound = Button(cx - 100, 300, 200, 50, "SOUND: ON")
+        current_sens_name = self.sens_names[self.current_sens_idx]
+        self.btn_sensitivity = Button(cx - 100, 370, 200, 50, f"SENSITIVITY: {current_sens_name}")
         
-        self.btn_reset_match = Button(cx - 60, SCREEN_HEIGHT - 60, 120, 40, "RESET", RED)
+        # --- IN GAME UI ---
+        # Tombol Pause (Pojok Kanan Atas)
         self.btn_pause_game = Button(SCREEN_WIDTH - 120, 20, 100, 40, "MENU", GREY)
         
-        self.btn_resume = Button(cx - 100, SCREEN_HEIGHT//2 - 30, 200, 50, "RESUME", ACCENT_COLOR)
-        self.btn_exit_to_menu = Button(cx - 100, SCREEN_HEIGHT//2 + 40, 200, 50, "MAIN MENU", GREY)
+        # --- PAUSE MENU UI ---
+        self.btn_resume = Button(cx - 100, SCREEN_HEIGHT//2 - 60, 200, 50, "RESUME", ACCENT_COLOR)
+        self.btn_restart = Button(cx - 100, SCREEN_HEIGHT//2 + 10, 200, 50, "RESTART MATCH", RED)
+        self.btn_exit_to_menu = Button(cx - 100, SCREEN_HEIGHT//2 + 80, 200, 50, "MAIN MENU", GREY)
         
+        # --- GAME OVER UI ---
         self.btn_play_again = Button(cx - 100, 380, 200, 50, "PLAY AGAIN", ACCENT_COLOR)
         self.btn_main_menu = Button(cx - 100, 450, 200, 50, "MAIN MENU", GREY)
 
@@ -106,11 +137,15 @@ class GameManager:
         self.table = Table()
         self.cue_ball = CueBall(TABLE_X + 200, TABLE_Y + PLAY_HEIGHT // 2)
         self.balls = [self.cue_ball]
+        
+        # Create Cue and apply current sensitivity
         self.cue = Cue(self.cue_ball)
+        self.cue.sensitivity = self.sens_values[self.current_sens_idx]
         
         start_x = TABLE_X + 600
         start_y = TABLE_Y + PLAY_HEIGHT // 2
         
+        # Susunan bola 8-ball (Triangle rack)
         colors = [YELLOW, BLUE, RED, PURPLE, ORANGE, GREEN, MAROON, BLACK, 
                   YELLOW, BLUE, RED, PURPLE, ORANGE, GREEN, MAROON]
         numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
@@ -153,27 +188,38 @@ class GameManager:
                 if self.state == STATE_MENU:
                     if self.btn_start.is_clicked(event): self.state = STATE_PLAYING
                     if self.btn_tutorial.is_clicked(event): self.state = STATE_TUTORIAL
+                    if self.btn_team.is_clicked(event): self.state = STATE_TEAM
                     if self.btn_settings.is_clicked(event): self.state = STATE_SETTINGS
                     if self.btn_quit.is_clicked(event): pygame.quit(); sys.exit()
                 
                 elif self.state == STATE_SETTINGS:
-                    if self.btn_back.is_clicked(event): self.state = STATE_MENU
+                    if self.btn_back_panel.is_clicked(event): self.state = STATE_MENU
+                    
                     if self.btn_toggle_sound.is_clicked(event):
                         self.sound_manager.enabled = not self.sound_manager.enabled
                         status = "ON" if self.sound_manager.enabled else "OFF"
                         self.btn_toggle_sound.text = f"SOUND: {status}"
+
+                    if self.btn_sensitivity.is_clicked(event):
+                        self.current_sens_idx = (self.current_sens_idx + 1) % 3
+                        val = self.sens_values[self.current_sens_idx]
+                        name = self.sens_names[self.current_sens_idx]
+                        
+                        self.btn_sensitivity.text = f"SENSITIVITY: {name}"
+                        if self.cue:
+                            self.cue.sensitivity = val
                         
                 elif self.state == STATE_TUTORIAL:
-                    if self.btn_back.is_clicked(event): self.state = STATE_MENU
+                    if self.btn_back_panel.is_clicked(event): self.state = STATE_MENU
                 
+                elif self.state == STATE_TEAM:
+                    if self.btn_back_panel.is_clicked(event): self.state = STATE_MENU
+
                 elif self.state == STATE_PLAYING:
                     if self.btn_pause_game.is_clicked(event):
                         self.state = STATE_PAUSED
                     
-                    if self.btn_reset_match.is_clicked(event):
-                        self.reset_game()
-
-                    if not self.btn_pause_game.is_hovered and not self.btn_reset_match.is_hovered:
+                    if not self.btn_pause_game.is_hovered:
                         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                             if not self.is_moving:
                                 shot_fired = self.cue.handle_click()
@@ -186,6 +232,9 @@ class GameManager:
                 
                 elif self.state == STATE_PAUSED:
                     if self.btn_resume.is_clicked(event):
+                        self.state = STATE_PLAYING
+                    if self.btn_restart.is_clicked(event):
+                        self.reset_game()
                         self.state = STATE_PLAYING
                     if self.btn_exit_to_menu.is_clicked(event):
                         self.reset_game()
@@ -204,35 +253,44 @@ class GameManager:
             if self.state == STATE_MENU:
                 self.btn_start.check_hover(mouse_pos)
                 self.btn_tutorial.check_hover(mouse_pos)
+                self.btn_team.check_hover(mouse_pos)
                 self.btn_settings.check_hover(mouse_pos)
                 self.btn_quit.check_hover(mouse_pos)
                 self.draw_menu()
                 
             elif self.state == STATE_PLAYING:
                 self.btn_pause_game.check_hover(mouse_pos)
-                self.btn_reset_match.check_hover(mouse_pos)
                 self.update_game_logic(mouse_pos)
                 self.draw_game(mouse_pos)
                 
             elif self.state == STATE_PAUSED:
                 self.btn_resume.check_hover(mouse_pos)
+                self.btn_restart.check_hover(mouse_pos)
                 self.btn_exit_to_menu.check_hover(mouse_pos)
                 self.draw_game(mouse_pos)
                 self.draw_paused()
                 
             elif self.state == STATE_TUTORIAL:
-                self.btn_back.check_hover(mouse_pos)
+                self.btn_back_panel.check_hover(mouse_pos)
                 self.draw_tutorial()
+
+            elif self.state == STATE_TEAM:
+                self.btn_back_panel.check_hover(mouse_pos)
+                self.draw_team()
                 
             elif self.state == STATE_SETTINGS:
-                self.btn_back.check_hover(mouse_pos)
+                self.btn_back_panel.check_hover(mouse_pos)
                 self.btn_toggle_sound.check_hover(mouse_pos)
+                self.btn_sensitivity.check_hover(mouse_pos)
                 self.draw_settings()
                 
             elif self.state == STATE_GAME_OVER:
                 self.btn_play_again.check_hover(mouse_pos)
                 self.btn_main_menu.check_hover(mouse_pos)
                 self.draw_game_over()
+
+            if DEBUG_MODE:
+                self.draw_debug_info()
 
             self.clock.tick(FPS)
             pygame.display.flip()
@@ -241,31 +299,39 @@ class GameManager:
         if not self.is_moving:
             self.cue.update(mouse_pos)
         
+        # --- PHYSICS SUB-STEPPING (SOLUSI TUNNELING) ---
+        physics_steps = 10 
+        
+        for _ in range(physics_steps):
+            for ball in self.balls:
+                if ball.potted: continue
+                
+                ball.pos += ball.velocity / physics_steps
+                
+                ball.check_wall_collision(self.table.rect)
+                
+                if ball.check_pocket_collision(self.table.pockets):
+                    self.sound_manager.play('pocket')
+                    self.handle_pot(ball)
+            
+            for i in range(len(self.balls)):
+                for j in range(i + 1, len(self.balls)):
+                    b1 = self.balls[i]
+                    b2 = self.balls[j]
+                    if PhysicsEngine.resolve_collision(b1, b2):
+                        impact = (b1.velocity - b2.velocity).length()
+                        if impact > 1:
+                            self.sound_manager.play('hit')
+
         moving_count = 0
         for ball in self.balls:
             if ball.potted: continue
             
-            prev_vel = ball.velocity.length()
-            ball.update()
-            
-            if ball.check_wall_collision(self.table.rect) and prev_vel > 2:
-                pass
-            
-            if ball.check_pocket_collision(self.table.pockets):
-                self.sound_manager.play('pocket')
-                self.handle_pot(ball)
-            
-            if ball.velocity.length() > 0:
+            if ball.velocity.length() > 0.05:
+                ball.velocity *= ball.friction
                 moving_count += 1
-        
-        for i in range(len(self.balls)):
-            for j in range(i + 1, len(self.balls)):
-                b1 = self.balls[i]
-                b2 = self.balls[j]
-                if PhysicsEngine.resolve_collision(b1, b2):
-                    impact = (b1.velocity - b2.velocity).length()
-                    if impact > 1:
-                        self.sound_manager.play('hit')
+            else:
+                ball.velocity = pygame.math.Vector2(0, 0)
 
         if self.is_moving and moving_count == 0:
             self.is_moving = False
@@ -326,34 +392,96 @@ class GameManager:
 
     def draw_menu(self):
         title = self.title_font.render("BILLIARD SIMULATION", True, WHITE)
-        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 150))
+        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 120))
+        
         self.btn_start.draw(self.screen)
         self.btn_tutorial.draw(self.screen)
+        self.btn_team.draw(self.screen) # Draw tombol Team
         self.btn_settings.draw(self.screen)
         self.btn_quit.draw(self.screen)
 
+    # --- Helper Method untuk Panel yang Konsisten ---
+    def draw_panel(self, title, height=450):
+        # 1. Overlay Gelap Transparan
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        overlay.set_alpha(150)
+        overlay.fill(BLACK)
+        self.screen.blit(overlay, (0,0))
+        
+        # 2. Panel Utama
+        panel_w, panel_h = 600, height
+        panel_x = (SCREEN_WIDTH - panel_w) // 2
+        panel_y = (SCREEN_HEIGHT - panel_h) // 2
+        
+        # Shadow
+        pygame.draw.rect(self.screen, (10, 10, 10), (panel_x + 5, panel_y + 5, panel_w, panel_h), border_radius=15)
+        # Background Panel
+        pygame.draw.rect(self.screen, DARK_GREY, (panel_x, panel_y, panel_w, panel_h), border_radius=15)
+        # Border Panel
+        pygame.draw.rect(self.screen, ACCENT_COLOR, (panel_x, panel_y, panel_w, panel_h), 2, border_radius=15)
+        
+        # 3. Header Title
+        title_surf = self.header_font.render(title, True, ACCENT_COLOR)
+        title_rect = title_surf.get_rect(center=(SCREEN_WIDTH//2, panel_y + 40))
+        self.screen.blit(title_surf, title_rect)
+        
+        # Garis pemisah di bawah judul
+        pygame.draw.line(self.screen, GREY, (panel_x + 50, panel_y + 70), (panel_x + panel_w - 50, panel_y + 70), 2)
+        
+        return panel_x, panel_y, panel_w, panel_h
+
     def draw_settings(self):
-        title = self.title_font.render("SETTINGS", True, WHITE)
-        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 100))
+        self.draw_panel("SETTINGS")
+        
+        # Tombol-tombol di dalam panel
         self.btn_toggle_sound.draw(self.screen)
-        self.btn_back.draw(self.screen)
+        self.btn_sensitivity.draw(self.screen)
+        self.btn_back_panel.draw(self.screen)
 
     def draw_tutorial(self):
-        title = self.title_font.render("HOW TO PLAY", True, WHITE)
-        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 50))
+        panel_x, panel_y, panel_w, panel_h = self.draw_panel("HOW TO PLAY")
+        
         lines = [
-            "1. ARAHKAN mouse untuk membidik.",
-            "2. KLIK KIRI sekali untuk MENGUNCI ARAH.",
-            "3. TARIK MOUSE ke belakang untuk POWER.",
-            "4. KLIK KIRI lagi untuk MENEMBAK.",
-            "5. KLIK KANAN untuk membatalkan bidikan.",
+            ("Arahkan Mouse", "Untuk membidik bola sasaran."),
+            ("Klik Kiri (1x)", "Mengunci arah (Aim Lock)."),
+            ("Tarik Mouse", "Mengatur kekuatan (Power)."),
+            ("Klik Kiri (2x)", "Melepaskan tembakan."),
+            ("Klik Kanan", "Membatalkan tembakan/kunci."),
+            ("Tombol Menu", "Pause permainan."),
         ]
-        y = 150
-        for line in lines:
-            txt = self.font.render(line, True, TEXT_COLOR)
-            self.screen.blit(txt, (SCREEN_WIDTH//2 - 200, y))
-            y += 35
-        self.btn_back.draw(self.screen)
+        
+        start_y_text = panel_y + 100
+        for action, desc in lines:
+            # Action (Bold/Accent)
+            act_surf = self.font.render(action, True, ACCENT_COLOR)
+            self.screen.blit(act_surf, (panel_x + 50, start_y_text))
+            
+            # Description (White)
+            desc_surf = self.font.render(f":  {desc}", True, WHITE)
+            self.screen.blit(desc_surf, (panel_x + 200, start_y_text))
+            
+            start_y_text += 40
+            
+        self.btn_back_panel.draw(self.screen)
+
+    def draw_team(self):
+        panel_x, panel_y, panel_w, panel_h = self.draw_panel("OUR TEAM")
+        
+        # Silakan edit nama-nama di bawah ini sesuai anggota kelompok Anda
+        team_members = [
+            "Muhammad Daffa Ramdhani (1313624025)",
+            "Nama Anggota 2 (NIM)",
+            "Nama Anggota 3 (NIM)",
+        ]
+        
+        start_y_text = panel_y + 120
+        for member in team_members:
+            txt_surf = self.font.render(member, True, WHITE)
+            txt_rect = txt_surf.get_rect(center=(SCREEN_WIDTH//2, start_y_text))
+            self.screen.blit(txt_surf, txt_rect)
+            start_y_text += 45
+            
+        self.btn_back_panel.draw(self.screen)
 
     def draw_remaining_balls(self, player_num, start_x, start_y, align_left=True):
         p_type = self.player_assignments[player_num]
@@ -385,19 +513,28 @@ class GameManager:
     def draw_game(self, mouse_pos):
         pygame.draw.rect(self.screen, DARK_GREY, (0, 0, SCREEN_WIDTH, 80))
         
+        # Indicator Player 1
         p1_type = self.player_assignments[1] if self.player_assignments[1] else "OPEN"
         p1_color = ACCENT_COLOR if self.turn == 1 else GREY
         p1_text = self.font.render(f"PLAYER 1 ({p1_type.upper()})", True, p1_color)
         self.screen.blit(p1_text, (50, 20))
+        # Active Player Marker
+        if self.turn == 1:
+            pygame.draw.circle(self.screen, ACCENT_COLOR, (30, 30), 5)
         self.draw_remaining_balls(1, 50, 55, align_left=True)
             
+        # Indicator Player 2
         p2_type = self.player_assignments[2] if self.player_assignments[2] else "OPEN"
         p2_color = ACCENT_COLOR if self.turn == 2 else GREY
         p2_text = self.font.render(f"PLAYER 2 ({p2_type.upper()})", True, p2_color)
         p2_rect = p2_text.get_rect(topright=(SCREEN_WIDTH - 150, 20))
         self.screen.blit(p2_text, p2_rect)
+        # Active Player Marker
+        if self.turn == 2:
+            pygame.draw.circle(self.screen, ACCENT_COLOR, (SCREEN_WIDTH - 30, 30), 5)
         self.draw_remaining_balls(2, SCREEN_WIDTH - 150, 55, align_left=False)
 
+        # Power Bar
         bar_x, bar_y = SCREEN_WIDTH // 2 - 100, 25
         bar_w, bar_h = 200, 30
         pygame.draw.rect(self.screen, BLACK, (bar_x, bar_y, bar_w, bar_h), border_radius=5)
@@ -426,7 +563,6 @@ class GameManager:
             pygame.draw.rect(self.screen, (0,0,0,180), bg_rect, border_radius=10)
             self.screen.blit(msg_surf, msg_rect)
             
-        self.btn_reset_match.draw(self.screen)
         self.btn_pause_game.draw(self.screen)
 
     def draw_paused(self):
@@ -436,10 +572,11 @@ class GameManager:
         self.screen.blit(overlay, (0,0))
         
         text = self.title_font.render("GAME PAUSED", True, WHITE)
-        rect = text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 100))
+        rect = text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 120))
         self.screen.blit(text, rect)
         
         self.btn_resume.draw(self.screen)
+        self.btn_restart.draw(self.screen)
         self.btn_exit_to_menu.draw(self.screen)
 
     def draw_game_over(self):
@@ -455,6 +592,15 @@ class GameManager:
         
         self.btn_play_again.draw(self.screen)
         self.btn_main_menu.draw(self.screen)
+
+    def draw_debug_info(self):
+        """Menampilkan informasi debug (FPS, Jumlah Objek)"""
+        fps = int(self.clock.get_fps())
+        fps_text = self.debug_font.render(f"FPS: {fps}", True, GREEN)
+        obj_text = self.debug_font.render(f"Balls: {len([b for b in self.balls if not b.potted])}", True, GREEN)
+        
+        self.screen.blit(fps_text, (10, SCREEN_HEIGHT - 30))
+        self.screen.blit(obj_text, (10, SCREEN_HEIGHT - 15))
 
 if __name__ == "__main__":
     game = GameManager()

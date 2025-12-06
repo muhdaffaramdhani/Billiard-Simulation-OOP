@@ -2,8 +2,18 @@ import math
 import pygame
 
 class PhysicsEngine:
+    """
+    Menangani logika fisika permainan biliar, termasuk:
+    1. Deteksi tumbukan antar bola (Collision Resolution).
+    2. Raycasting untuk prediksi lintasan bola dan stik.
+    """
+
     @staticmethod
     def resolve_collision(ball1, ball2):
+        """
+        Menyelesaikan tumbukan elastis 2D antara dua bola dengan hukum kekekalan momentum.
+        Menggunakan teknik pemisahan posisi (overlap correction) untuk mencegah bola lengket.
+        """
         if ball1.potted or ball2.potted:
             return False
 
@@ -11,30 +21,37 @@ class PhysicsEngine:
         dy = ball1.pos.y - ball2.pos.y
         distance = math.hypot(dx, dy)
 
+        # Cek apakah bola bersentuhan
         if distance < ball1.radius + ball2.radius:
             if distance == 0: distance = 0.001 
             
+            # Normal vector collision
             nx = dx / distance
             ny = dy / distance
 
+            # Tangent vector
             tx = -ny
             ty = nx
 
+            # Dot Product Tangent
             v1n = ball1.velocity.x * nx + ball1.velocity.y * ny
             v1t = ball1.velocity.x * tx + ball1.velocity.y * ty
             
             v2n = ball2.velocity.x * nx + ball2.velocity.y * ny
             v2t = ball2.velocity.x * tx + ball2.velocity.y * ty
 
+            # Pertukaran momentum (elastis sempurna untuk komponen normal)
             v1n_final = v2n
             v2n_final = v1n
 
+            # Update kecepatan
             ball1.velocity.x = v1n_final * nx + v1t * tx
             ball1.velocity.y = v1n_final * ny + v1t * ty
             
             ball2.velocity.x = v2n_final * nx + v2t * tx
             ball2.velocity.y = v2n_final * ny + v2t * ty
 
+            # --- Overlap Correction (Mencegah bola 'lengket' atau menempel) ---
             overlap = (ball1.radius + ball2.radius - distance) / 2.0
             ball1.pos.x += nx * overlap
             ball1.pos.y += ny * overlap
@@ -46,6 +63,10 @@ class PhysicsEngine:
 
     @staticmethod
     def ray_cast_ball(start_pos, direction_vector, balls):
+        """
+        Mendeteksi bola pertama yang akan terkena lintasan (untuk fitur aiming line).
+        Mengembalikan objek bola terdekat dan titik koordinat tumbukan.
+        """
         closest_dist = float('inf')
         closest_ball = None
         hit_pos = None
@@ -65,6 +86,7 @@ class PhysicsEngine:
             dist_to_center = closest_point_on_ray.distance_to(ball.pos)
             
             if dist_to_center < ball.radius * 2:
+                # Menghitung titik tepat di permukaan bola
                 dist_back = math.sqrt((ball.radius * 2)**2 - dist_to_center**2)
                 impact_point = closest_point_on_ray - dir_norm * dist_back
                 dist_from_start = start_pos.distance_to(impact_point)
