@@ -470,8 +470,8 @@ class GameManager:
         # Silakan edit nama-nama di bawah ini sesuai anggota kelompok Anda
         team_members = [
             "Muhammad Daffa Ramdhani (1313624025)",
-            "Nama Anggota 2 (NIM)",
-            "Nama Anggota 3 (NIM)",
+            "Ricky Darmawan (1313624007)",
+            "Muhammad Fabio Usama (1313624054)",
         ]
         
         start_y_text = panel_y + 120
