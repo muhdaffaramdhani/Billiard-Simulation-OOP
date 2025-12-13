@@ -74,7 +74,6 @@ Billiard Master mensimulasikan permainan biliar 8-ball dengan aturan resmi dan m
 Proyek ini dirancang secara modular dengan prinsip **OOP**:
 
 ```
-
 📦 BilliardMaster
 ┣ 📜 main.py          # GameManager (Game Loop & State Management)
 ┣ 📜 physics.py       # PhysicsEngine (Collision & Vector Math)
@@ -85,7 +84,6 @@ Proyek ini dirancang secara modular dengan prinsip **OOP**:
 ┣ 📜 config.py        # Konstanta Global (Warna, FPS, Resolusi)
 ┣ 📜 requirements.txt
 ┗ 📜 leaderboard.json
-
 ````
 
 ## 🚀 Instalasi & Menjalankan Program
