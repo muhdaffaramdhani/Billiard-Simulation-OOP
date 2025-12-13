@@ -40,11 +40,14 @@ HIGHLIGHT_COLOR = (255, 255, 255, 100) # Transparan untuk kilap bola
 
 # Game States
 STATE_MENU = "menu"
+STATE_INPUT_NAMES = "input_names" # State baru untuk input nama
 STATE_PLAYING = "playing"
 STATE_GAME_OVER = "game_over"
 STATE_TUTORIAL = "tutorial"
 STATE_SETTINGS = "settings"
+STATE_LEADERBOARD = "leaderboard" # State baru untuk papan peringkat
 STATE_PAUSED = "paused"
+STATE_TEAM = "team"
 
-# Debugging (Minggu 5 Feature)
-DEBUG_MODE = True  # Ubah ke False saat rilis final
+# Debugging
+DEBUG_MODE = False  # Set False untuk final release
