@@ -75,13 +75,13 @@ Proyek ini dirancang secara modular dengan prinsip **OOP**:
 
 ```
 📦 BilliardMaster
-┣ 📜 main.py          # GameManager (Game Loop & State Management)
-┣ 📜 physics.py       # PhysicsEngine (Collision & Vector Math)
-┣ 📜 ball.py          # Ball, CueBall, ObjectBall (Inheritance)
-┣ 📜 cue.py           # Cue Stick & Aiming Logic
-┣ 📜 table.py         # Meja, Cushion, Area Permainan
-┣ 📜 leaderboard.py   # I/O JSON Leaderboard
-┣ 📜 config.py        # Konstanta Global (Warna, FPS, Resolusi)
+┣ 📜 main.py              # GameManager (Game Loop & State Management)
+┣ 📜 physics.py           # PhysicsEngine (Collision & Vector Math)
+┣ 📜 ball.py              # Ball, CueBall, ObjectBall (Inheritance)
+┣ 📜 cue.py               # Cue Stick & Aiming Logic
+┣ 📜 table.py             # Meja, Cushion, Area Permainan
+┣ 📜 leaderboard.py       # I/O JSON Leaderboard
+┣ 📜 config.py            # Konstanta Global (Warna, FPS, Resolusi)
 ┣ 📜 requirements.txt
 ┗ 📜 leaderboard.json
 ````
