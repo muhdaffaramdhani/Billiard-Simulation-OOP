@@ -1,8 +1,3 @@
-Berikut adalah **README.md** yang rapi, lengkap, dan siap digunakan untuk repositori GitHub proyek Anda. Saya menyusunnya dalam format Markdown profesional, cocok untuk **final project / tugas akhir OOP**.
-
----
-
-```markdown
 # 🎱 Billiard Master Simulation
 
 **Billiard Master** adalah simulasi permainan biliar **8-ball** berbasis desktop yang dikembangkan menggunakan **Python** dan **Pygame**. Proyek ini dirancang sebagai **Final Project** untuk mata kuliah **Desain Pemrograman Berorientasi Objek**, dengan fokus pada penerapan **OOP**, **fisika 2D realistis**, serta **manajemen data lokal**.
@@ -92,8 +87,6 @@ Proyek ini dirancang secara modular dengan prinsip **OOP**:
 ┗ 📜 leaderboard.json
 
 ````
-
----
 
 ## 🚀 Instalasi & Menjalankan Program
 
