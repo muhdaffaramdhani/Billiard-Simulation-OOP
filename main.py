@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 import sys
 import array
 from config import *
@@ -47,9 +47,7 @@ class Button:
 
     def draw(self, surface):
         color = self.color if not self.is_hovered else self.hover_color
-        # Shadow effect
         pygame.draw.rect(surface, (10, 10, 10), (self.rect.x + 2, self.rect.y + 2, self.rect.w, self.rect.h), border_radius=8)
-        # Main button
         pygame.draw.rect(surface, color, self.rect, border_radius=8)
         pygame.draw.rect(surface, WHITE, self.rect, 2, border_radius=8)
         
@@ -85,11 +83,10 @@ class TextInput:
                 self.active = False
         if event.type == pygame.KEYDOWN and self.active:
             if event.key == pygame.K_RETURN:
-                return True # Signal finished
+                return True
             elif event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
             else:
-                # Batasi panjang nama
                 if len(self.text) < 12:
                     self.text += event.unicode
         return False
@@ -103,7 +100,6 @@ class TextInput:
         color_text = WHITE if self.text else GREY
         
         txt_surface = self.font.render(display_text, True, color_text)
-        # Center vertically
         surface.blit(txt_surface, (self.rect.x + 10, self.rect.y + (self.rect.h - txt_surface.get_height()) // 2))
 
 class GameManager:
@@ -113,7 +109,6 @@ class GameManager:
         pygame.display.set_caption("Billiard 8-Ball Master - Final Project")
         self.clock = pygame.time.Clock()
         
-        # Fonts
         self.font = pygame.font.SysFont('Arial', 18)
         self.debug_font = pygame.font.SysFont('Consolas', 14)
         self.title_font = pygame.font.SysFont('Arial', 48, bold=True)
@@ -121,7 +116,6 @@ class GameManager:
         self.ball_font = pygame.font.SysFont('Arial', 10, bold=True)
         self.ui_ball_font = pygame.font.SysFont('Arial', 12, bold=True)
         
-        # Systems
         self.state = STATE_MENU
         self.sound_manager = SoundGenerator()
         self.leaderboard = Leaderboard()
@@ -132,17 +126,14 @@ class GameManager:
             8: BLACK
         }
 
-        # Sensitivity
         self.sens_values = [0.5, 1.0, 1.5]
         self.sens_names = ["LOW", "NORMAL", "HIGH"]
         self.current_sens_idx = 0 
 
-        # Player Info
         self.p1_name = "Player 1"
         self.p2_name = "Player 2"
         self.winner_name = ""
 
-        # UI Init
         self.init_ui()
         self.init_input_ui()
         self.reset_game_objects()
@@ -230,7 +221,6 @@ class GameManager:
                     pygame.quit()
                     sys.exit()
                 
-                # --- EVENT HANDLING BY STATE ---
                 if self.state == STATE_MENU:
                     if self.btn_start.is_clicked(event): 
                         self.state = STATE_INPUT_NAMES
@@ -271,7 +261,6 @@ class GameManager:
                         self.reset_game_objects()
                         self.state = STATE_MENU
                 
-                # Global Back Buttons for Panels
                 elif self.state in [STATE_SETTINGS, STATE_TUTORIAL, STATE_TEAM, STATE_LEADERBOARD]:
                     if self.btn_back_panel.is_clicked(event): self.state = STATE_MENU
                     
@@ -293,7 +282,6 @@ class GameManager:
                         self.reset_game_objects()
                         self.state = STATE_MENU
 
-            # --- DRAWING ---
             self.screen.fill(UI_BG)
             
             if self.state == STATE_MENU:
@@ -304,7 +292,7 @@ class GameManager:
                 self.update_game_logic(mouse_pos)
                 self.draw_game(mouse_pos)
             elif self.state == STATE_PAUSED:
-                self.update_game_logic(mouse_pos) # keep drawing game behind
+                self.update_game_logic(mouse_pos)
                 self.draw_game(mouse_pos)
                 self.draw_paused(mouse_pos)
             elif self.state == STATE_GAME_OVER:
@@ -374,29 +362,27 @@ class GameManager:
             p_type = self.player_assignments[current_player]
             has_won = False
             
-            # Logic Menang/Kalah Bola 8
             if p_type:
                 target_nums = list(range(1, 8)) if p_type == 'solid' else list(range(9, 16))
                 remaining = [b for b in self.balls if b.number in target_nums and not b.potted]
-                if not remaining: has_won = True # Masuk legal
-                else: has_won = False # Masuk tapi bola lain masih ada
+                if not remaining: has_won = True
+                else: has_won = False
             else:
-                has_won = False # Masuk terlalu dini (belum ada assignment)
+                has_won = False
             
             if has_won:
                 winner_id = current_player
                 self.winner_name = self.p1_name if winner_id == 1 else self.p2_name
                 self.winner_text = f"VICTORY! {self.winner_name.upper()} WINS!"
-                self.leaderboard.add_win(self.winner_name) # SAVE KE LEADERBOARD
+                self.leaderboard.add_win(self.winner_name)
             else:
                 winner_id = 2 if current_player == 1 else 1
                 self.winner_name = self.p1_name if winner_id == 1 else self.p2_name
                 self.winner_text = f"GAME OVER! {self.winner_name.upper()} WINS!"
-                self.leaderboard.add_win(self.winner_name) # SAVE KE LEADERBOARD
+                self.leaderboard.add_win(self.winner_name)
                 
             self.state = STATE_GAME_OVER
         else:
-            # Logic Assignment Solid/Stripe
             if self.player_assignments[1] is None:
                 if self.turn == 1:
                     self.player_assignments[1] = ball.type
@@ -414,7 +400,7 @@ class GameManager:
                 self.ball_potted_this_turn = False
 
     def switch_turn(self):
-        player_name = self.p1_name if self.turn == 2 else self.p2_name # Switch happen next line
+        player_name = self.p1_name if self.turn == 2 else self.p2_name
         if not self.ball_potted_this_turn:
             self.turn = 2 if self.turn == 1 else 1
             next_name = self.p1_name if self.turn == 1 else self.p2_name
@@ -425,7 +411,6 @@ class GameManager:
         self.message_timer = 60
         self.ball_potted_this_turn = False
 
-    # --- DRAWING METHODS ---
     def draw_menu(self, mouse_pos):
         title = self.title_font.render("BILLIARD MASTER", True, WHITE)
         self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 100))
@@ -452,7 +437,6 @@ class GameManager:
         top_players = self.leaderboard.get_top_players(5)
         
         start_y = y + 100
-        # Header Table
         headers = ["Rank", "Name", "Wins"]
         gx = [x + 50, x + 150, x + 450]
         for i, h_text in enumerate(headers):
@@ -551,7 +535,6 @@ class GameManager:
     def draw_game(self, mouse_pos):
         pygame.draw.rect(self.screen, DARK_GREY, (0, 0, SCREEN_WIDTH, 80))
         
-        # Player 1 Info
         p1_type = self.player_assignments[1] if self.player_assignments[1] else "OPEN"
         p1_col = ACCENT_COLOR if self.turn == 1 else GREY
         p1_txt = self.font.render(f"{self.p1_name} ({p1_type.upper()})", True, p1_col)
@@ -559,7 +542,6 @@ class GameManager:
         if self.turn == 1: pygame.draw.circle(self.screen, ACCENT_COLOR, (30, 30), 5)
         self.draw_remaining_balls(1, 50, 55, align_left=True)
             
-        # Player 2 Info
         p2_type = self.player_assignments[2] if self.player_assignments[2] else "OPEN"
         p2_col = ACCENT_COLOR if self.turn == 2 else GREY
         p2_txt = self.font.render(f"{self.p2_name} ({p2_type.upper()})", True, p2_col)
@@ -568,7 +550,6 @@ class GameManager:
         if self.turn == 2: pygame.draw.circle(self.screen, ACCENT_COLOR, (SCREEN_WIDTH - 30, 30), 5)
         self.draw_remaining_balls(2, SCREEN_WIDTH - 150, 55, align_left=False)
 
-        # Power Bar
         bar_x, bar_y = SCREEN_WIDTH // 2 - 100, 25
         bar_w, bar_h = 200, 30
         pygame.draw.rect(self.screen, BLACK, (bar_x, bar_y, bar_w, bar_h), border_radius=5)
