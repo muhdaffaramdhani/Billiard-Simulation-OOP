@@ -56,10 +56,6 @@ class PhysicsEngine:
 
     @staticmethod
     def ray_cast_ball(start_pos, direction_vector, balls):
-        """
-        Mendeteksi bola pertama yang akan terkena lintasan (untuk fitur aiming line).
-        Mengembalikan objek bola terdekat dan titik koordinat tumbukan.
-        """
         closest_dist = float('inf')
         closest_ball = None
         hit_pos = None
